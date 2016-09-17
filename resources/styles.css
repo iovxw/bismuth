@@ -1,5 +1,6 @@
-body {
+html, body {
     margin: 0;
+    height: 100%;
 }
 
 #app {
@@ -9,6 +10,10 @@ body {
     background-repeat: no-repeat;
     background-position: center;
     background-size: cover;
+}
+
+#app > div {
+    height: 100%;
 }
 
 #title-bar {
@@ -50,4 +55,32 @@ body {
 
 #title-bar .mini-size:hover {
     background: #66BB6A;
+}
+
+#contents {
+    height: 100%;
+    margin-top: -48px;
+    padding-top: 48px;
+    box-sizing: border-box;
+    display: flex;
+}
+
+#tabs {
+    width: 30%;
+    height: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+#tab-contents {
+    width: 70%;
+    height: 100%;
+    padding: 10px 10px 10px 0;
+    box-sizing: border-box;
+}
+
+#tabs > div, #tab-contents > div {
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
 }

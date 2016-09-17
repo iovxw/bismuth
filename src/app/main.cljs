@@ -43,10 +43,10 @@
 
 (defn mk-window [w h & {:keys [skip-taskbar min-width min-height
                                always-on-top focusable resizable
-                               x y frame show icon]}]
+                               x y frame show icon title]}]
   (BrowserWindow. (clj->js {:width w :height h :frame frame :show show
                             :minWidth min-width :minHeight min-height
-                            :skipTaskbar skip-taskbar
+                            :skipTaskbar skip-taskbar :title title
                             :alwaysOnTop always-on-top
                             :focusable focusable :icon icon
                             :resizable resizable :x x :y y})))
@@ -65,6 +65,7 @@
         y (+ (.-y bounds) (- (/ (.-height bounds) 2) (/ height 2)))]
     (reset! main-window (mk-window width height :frame false
                                    :min-width width :min-height height
+                                   :title "bismuth"
                                    :x x :y y :icon (resource "images/icon.png"))))
 
   (load-page @main-window)

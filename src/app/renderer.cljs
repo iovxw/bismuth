@@ -24,8 +24,18 @@
     [:button.mini-size {:on-click #(.minimize current-window)}]
     [:button.close {:on-click #(.close current-window)}]]])
 
+(defn tabs []
+  [:div#tabs>div
+   ])
+
+(defn tab-contents []
+  [:div#tab-contents>div
+   ])
+
 (defn body []
-  [:div#main [title-bar]])
+  [:div [title-bar]
+   [:div#contents
+    [tabs] [tab-contents]]])
 
 (defn init []
   (enable-console-print!)
