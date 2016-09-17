@@ -58,13 +58,13 @@
 (defn init-browser []
   (let [screen (.-screen electron)
         width 800
-        height 600
+        height 450
         display (.getPrimaryDisplay screen)
         bounds (.-bounds display)
         x (+ (.-x bounds) (- (/ (.-width bounds) 2) (/ width 2)))
         y (+ (.-y bounds) (- (/ (.-height bounds) 2) (/ height 2)))]
     (reset! main-window (mk-window width height :frame false
-                                   :min-width 800 :min-height 600
+                                   :min-width width :min-height height
                                    :x x :y y :icon (resource "images/icon.png"))))
 
   (load-page @main-window)
