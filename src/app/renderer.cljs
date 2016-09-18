@@ -24,31 +24,50 @@
     [:button.mini-size {:on-click #(.minimize current-window)}]
     [:button.close {:on-click #(.close current-window)}]]])
 
+(defn scroll-to-tab [id]
+  (let [element (query-selecor (str "#tab" id))
+        offset-top (.-offsetTop element)
+        parent (.-parentElement element)
+        parent-offset-top (.-offsetTop parent)
+        relative-top (- offset-top parent-offset-top)
+        distance (- relative-top (.-scrollTop parent))
+        move (if (> distance 0) + -)
+        tick 10
+        speed 20
+        step (quot (if (> distance 0) distance (- distance)) speed)]
+    (doall
+     (for [i (range (inc step))]
+       (js/setTimeout
+        #(set! (.-scrollTop parent)
+               (if (= i step)
+                 relative-top
+                 (move (.-scrollTop parent) speed)))
+        (* tick i))))))
+
 (defn tabs [tabs-state title-list]
   (into
-   [:div#tabs>div]
-   (for [title title-list]
-     (let [id (hash title)]
-       [:div.tab
-        {:class (when (= id (:focus @tabs-state)) "focus" )
-         :on-click (fn [e] (swap! tabs-state assoc :focus id))}
-        [:a title]]))))
+   [:div.tabs>div]
+   (map-indexed
+    (fn [id title]
+      [:div.tab
+       {:class (when (= id (:focus @tabs-state)) "focus")
+        :on-click (fn [e] (swap! tabs-state assoc :focus id))}
+       [:a title]]) title-list)))
 
 (defn tab-contents [tabs-state contents]
   (into
-   [:div#tab-contents>div]
-   (for [[title content] (partition 2 contents)]
-     (let [id (hash title)]
-       [:div.block
-        {:style (when-not (= id (:focus @tabs-state))
-                  {:display "none"})}
-        [:h1 title]
-        content]))))
+   [:div.tab-contents>div
+    {:style {:transform (str "translateY(-" (* (:focus @tabs-state) 100) "%)")}}]
+   (doall
+    (for [[title content] (partition 2 contents)]
+      [:div.block>div
+       [:h1 title]
+       content]))))
 
 (defn contents [& contents]
   (let [title-list (take-nth 2 contents)
-        tabs-state (r/atom {:focus (hash (first title-list))})]
-    [:div#contents
+        tabs-state (r/atom {:focus 0})]
+    [:div.contents
      [tabs tabs-state title-list] [tab-contents tabs-state contents]]))
 
 (defn body []

@@ -64,7 +64,7 @@ h1 {
     background: #66BB6A;
 }
 
-#contents {
+.contents {
     color: white;
     height: 100%;
     margin-top: -48px;
@@ -73,28 +73,50 @@ h1 {
     display: flex;
 }
 
-#tabs {
+.tabs {
     min-width: 200px;
     height: 100%;
     padding: 10px;
     box-sizing: border-box;
 }
 
-#tab-contents {
+.tab-contents {
     width: 100%;
     height: 100%;
-    padding: 10px 10px 10px 0;
+    padding-right: 10px;
     box-sizing: border-box;
+    overflow-y: hidden;
 }
 
-#tabs > div, #tab-contents > div {
+.tab-contents > div {
+    height: 100%;
+    transition: all 0.5s;
+    transform: translateY(0)
+}
+
+.tabs > div, .tab-contents .block > div {
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.6);
     overflow-y: auto;
 }
 
-#tabs .tab {
+.tab-contents .block {
+    height: 100%;
+    padding: 10px 0;
+    box-sizing: border-box;
+}
+
+.block > div {
+    box-sizing: border-box;
+    padding: 10px;
+}
+
+.tab-contents .block:last-child {
+    margin-bottom: 0;
+}
+
+.tabs .tab {
     width: 100%;
     height: 36px;
     box-sizing: border-box;
@@ -114,8 +136,4 @@ h1 {
 
 .tab.focus {
     background: rgba(255, 255, 255, 0.2);
-}
-
-#tab-contents .block {
-    padding: 10px;
 }
