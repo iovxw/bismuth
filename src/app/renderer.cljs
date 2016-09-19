@@ -2,9 +2,10 @@
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [reagent.core :as r]
             [cljs-http.client :as http]
-            [cljs.core.async :refer [<!]]
+            [cljs.core.async :refer [<! >! put! take!]]
             [clojure.string :as string]
-            [html2canvas.core :refer [html2canvas]]))
+            [html2canvas.core :refer [html2canvas]]
+            [app.wallpaper-generator :as w]))
 
 (def electron    (js/require "electron"))
 (def ipcRenderer (.-ipcRenderer electron))
@@ -62,7 +63,7 @@
     (for [[title content] (partition 2 contents)]
       [:div.block>div
        [:h1 title]
-       content]))))
+       [:div content]]))))
 
 (defn contents [& contents]
   (let [title-list (take-nth 2 contents)
@@ -70,11 +71,44 @@
     [:div.contents
      [tabs tabs-state title-list] [tab-contents tabs-state contents]]))
 
+(def state (r/atom {:working? false
+                    :wallpapers ["images/background.png"
+                                 "./images/background.png"
+                                 "file:./images/background.png"]}))
+
+(defn preview []
+  [:div#preview
+   [:div#wallpaper-history>div
+    (for [src (:wallpapers @state)]
+      ^{:key (hash src)}
+      [:img {:src src}])]
+   [:div.toolbar
+    [:button#new-wallpaper
+     {:on-click (fn [e]
+                  (swap! state assoc :working? true)
+                  (take! (w/generate w/line 1920 1920)
+                         (fn [result]
+                           (swap! state assoc :working? false)
+                           (swap! state update-in [:wallpapers] #(cons result %)))))
+      :disabled (:working? @state)}
+     [:div "新壁纸"]]]])
+
 (defn body []
   [:div [title-bar]
    [contents
-    "全局设置" [:div "..."]
-    "自动切换" [:div "..."]]])
+    "壁纸设置" [preview]
+    "生成器设置" [:div
+                  [:p "生成器选择"]
+                  [:label "line" [:input {:type "checkbox"}]]]
+    "自动刷新" [:div
+                [:label "启用" [:input {:type "checkbox"}]]
+                [:p "时间间隔" [:input]]
+                [:div "壁纸设置命令:"
+                 [:div "预置:"
+                  [:button "GNOME"] [:button "KDE"]
+                  [:button "Xfce"] [:button "Cinnamon"]]
+                 [:textarea]]]
+    "关于" [:div "..."]]])
 
 (defn init []
   (enable-console-print!)

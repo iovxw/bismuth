@@ -3,13 +3,6 @@ html, body {
     height: 100%;
 }
 
-h1 {
-    font-size: 1.5em;
-    margin: 0;
-    padding: 10px 0;
-    border-bottom: 1px solid white;
-}
-
 #app {
     width: 100%;
     height: 100vh;
@@ -43,6 +36,7 @@ h1 {
     height: 16px;
     margin-left: 10px;
     padding: 0;
+    outline: none;
     transition: background 0.5s;
     -webkit-app-region: no-drag;
 }
@@ -90,7 +84,7 @@ h1 {
 
 .tab-contents > div {
     height: 100%;
-    transition: all 0.5s;
+    transition: all 0.2s;
     transform: translateY(0)
 }
 
@@ -112,8 +106,23 @@ h1 {
     padding: 10px;
 }
 
-.tab-contents .block:last-child {
-    margin-bottom: 0;
+.block > div > div {
+    margin-top: -43px;
+    padding-top: 53px;
+    height: 100%;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.block h1 {
+    font-size: 22px;
+    height: 22px;
+    line-height: 22px;
+    margin: 0;
+    padding: 10px 0;
+    border-bottom: 1px solid white;
+    -webkit-user-select: none;
+    cursor: default;
 }
 
 .tabs .tab {
@@ -136,4 +145,86 @@ h1 {
 
 .tab.focus {
     background: rgba(255, 255, 255, 0.2);
+}
+
+#preview {
+    height: 100%;
+}
+
+#preview .toolbar {
+    height: 64px;
+    width: 100%;
+    display: flex;
+    padding-top: 10px;
+    box-sizing: border-box;
+    align-items: center;
+}
+
+#new-wallpaper {
+    padding: 10px;
+    margin-left: auto;
+    border: 3px solid white;
+    color: white;
+    background: none;
+    outline: none;
+    transition: all 0.5s;
+    cursor: pointer;
+    box-sizing: content-box;
+}
+
+@keyframes loading {
+	0% {
+		transform: rotateY(0deg);
+	}
+	
+	100% {
+		transform: rotateY(180deg);
+	}
+}
+
+#new-wallpaper:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+#new-wallpaper:active {
+    background: none;
+    transition: none;
+}
+
+#new-wallpaper:disabled {
+    cursor: progress;
+}
+
+#new-wallpaper > div {
+    transition: all 0.5s;
+}
+
+#new-wallpaper:disabled > div {
+    background: white;
+    animation: loading 1s infinite ease;
+}
+
+#wallpaper-history {
+    height: 100%;
+    padding-bottom: 64px;
+    margin-bottom: -64px;
+    box-sizing: border-box;
+}
+
+#wallpaper-history > div {
+    height: 100%;
+    width: 100%;
+    overflow-x: auto;
+    display: flex;
+    -webkit-user-select: none;
+}
+
+#wallpaper-history img {
+    height: 100%;
+    margin-right: 5px;
+}
+
+
+#wallpaper-history img:last-child {
+    margin-right: 0;
 }
