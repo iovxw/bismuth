@@ -13,7 +13,7 @@
 
 (def current-window (.getCurrentWindow remote))
 
-(defn query-selecor [q]
+(defn query-selector [q]
   (.querySelector js/document q))
 
 (defn query-selecor-all [q]
@@ -26,7 +26,7 @@
     [:button.close {:on-click #(.close current-window)}]]])
 
 (defn scroll-to-tab [id]
-  (let [element (query-selecor (str "#tab" id))
+  (let [element (query-selector (str "#tab" id))
         offset-top (.-offsetTop element)
         parent (.-parentElement element)
         parent-offset-top (.-offsetTop parent)
@@ -112,4 +112,4 @@
 
 (defn init []
   (enable-console-print!)
-  (r/render body (query-selecor "#app")))
+  (r/render body (query-selector "#app")))
