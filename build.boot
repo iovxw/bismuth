@@ -10,9 +10,7 @@
 
                  [org.clojure/clojurescript "1.9.225"]
                  [org.clojure/core.async "0.2.385"]
-                 [reagent "0.6.0-rc"]
-                 [cljs-http "0.1.41"]
-                 [html2canvas "0.5.0-beta4"]])
+                 [reagent "0.6.0-rc"]])
 
 (require
  '[adzerk.boot-cljs      :refer [cljs]]

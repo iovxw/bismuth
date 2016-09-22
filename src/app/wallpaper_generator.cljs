@@ -1,7 +1,6 @@
 (ns app.wallpaper-generator
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [cljs.core.async :refer [>! <! put! take! timeout chan]]
-            [html2canvas.core :refer [html2canvas]]
             [reagent.core :as r]))
 
 (def color-group-list

@@ -1,10 +1,7 @@
 (ns app.renderer
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [reagent.core :as r]
-            [cljs-http.client :as http]
             [cljs.core.async :refer [<! >! put! take!]]
-            [clojure.string :as string]
-            [html2canvas.core :refer [html2canvas]]
             [app.wallpaper-generator :as w]))
 
 (def electron    (js/require "electron"))
