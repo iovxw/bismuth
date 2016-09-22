@@ -1,6 +1,8 @@
 # bismuth
 
-TODO: update README.md
+![screenshot.png](screenshot.png)
+
+填坑中
 
 ## Build
 
