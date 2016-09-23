@@ -1,12 +1,15 @@
 (ns app.renderer
-  (:require-macros [cljs.core.async.macros :refer [go]])
+  (:require-macros [cljs.core.async.macros :refer [go]]
+                   [app.macros :refer [<!-with-err go-let go-try]])
   (:require [reagent.core :as r]
-            [cljs.core.async :refer [<! >! put! take!]]
+            [cljs.core.async :refer [<! >! put! take! chan close!]]
+            [clojure.string :as string]
             [app.wallpaper-generator :as w]))
 
 (def electron    (js/require "electron"))
 (def ipcRenderer (.-ipcRenderer electron))
 (def remote      (.-remote electron))
+(def fs          (js/require "fs"))
 
 (def current-window (.getCurrentWindow remote))
 
@@ -68,10 +71,42 @@
     [:div.contents
      [tabs tabs-state title-list] [tab-contents tabs-state contents]]))
 
+(defn get-user-home []
+  (or js/process.env.HOME js/process.env.HOMEPATH js/process.env.USERPROFILE))
+
 (def state (r/atom {:working? false
-                    :wallpapers ["images/background.png"
-                                 "./images/background.png"
-                                 "file:./images/background.png"]}))
+                    :wallpapers []}))
+
+(def config (r/atom {:save-path (str (get-user-home) "/.cache/bismuth/")
+                     :max-wp-num 100
+                     :width 1920
+                     :height 1080}))
+
+(defn file-exist? [path]
+  (let [result-chan (chan)]
+    (.stat fs (:save-path @config)
+           #(if %
+              (if (= (.-code %) "ENOENT")
+                (put! result-chan {:result false})
+                (put! result-chan {:error %}))
+              (put! result-chan {:result true})))
+    result-chan))
+
+(defn save-wallpaper [wallpaper-base64]
+  (let [data (subs wallpaper-base64 22)
+        file-name (str "wp" (.getTime (js/Date.)) ".png")
+        file-path (str (:save-path @config) file-name)
+        result-chan (chan)]
+    (go-try
+     (when-not (<!-with-err (file-exist? (:save-path @config)))
+       (.mkdir fs (:save-path @config) #(when % (put! result-chan {:error %}))))
+     (.writeFile fs file-path data "base64"
+                 #(if %
+                    (put! result-chan {:error %})
+                    (put! result-chan {:result file-path})))
+     (catch :default e
+       (put! result-chan {:error e})))
+    result-chan))
 
 (defn preview []
   [:div#preview
@@ -83,10 +118,13 @@
     [:button#new-wallpaper
      {:on-click (fn [e]
                   (swap! state assoc :working? true)
-                  (take! (w/generate w/line 1920 1920)
-                         (fn [result]
-                           (swap! state assoc :working? false)
-                           (swap! state update-in [:wallpapers] #(cons result %)))))
+                  (go-try
+                   (let [result (<! (w/generate w/line (:width @config) (:height @config)))
+                         file-path (<!-with-err (save-wallpaper result))]
+                     (swap! state assoc :working? false)
+                     (swap! state update-in [:wallpapers] #(cons (str "file://" file-path) %)))
+                   (catch :default e
+                      (js/console.error e))))
       :disabled (:working? @state)}
      [:div "新壁纸"]]]])
 
