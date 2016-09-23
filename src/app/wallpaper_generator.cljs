@@ -46,7 +46,8 @@
                  [:feBlend {:in "SourceGraphic" :in2 "blurOut" :mode "normal"}]]
                 [:radialGradient {:id "grad"}
                  [:stop {:offset "0%" :style {:stop-opacity 0}}]
-                 [:stop {:offset "70%" :style {:stop-color "black" :stop-opacity 0.3}}]
+                 [:stop {:offset "30%" :style {:stop-color "black" :stop-opacity 0.05}}]
+                 [:stop {:offset "60%" :style {:stop-color "black" :stop-opacity 0.3}}]
                  [:stop {:offset "100%" :style {:stop-color "black" :stop-opacity 0.7}}]]]
                [:rect {:width "100%" :height "100%" :fill background}]
 
