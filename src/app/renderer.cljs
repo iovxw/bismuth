@@ -86,7 +86,7 @@
 
 (def config (let [{:keys [width height]} (get-largest-screen-size)]
               (r/atom {:save-path (str (get-user-home) "/.cache/bismuth/")
-                       :max-wp-num 100
+                       :max-wp-num 50
                        :width width
                        :height height})))
 
@@ -118,6 +118,20 @@
                   (put! result-chan {:error %1})
                   (put! result-chan {:result %2})))
     result-chan))
+
+(defn read-dir [path & {:keys [encoding]
+                        :or {encoding "utf8"}}]
+  (let [result-chan (chan)]
+    (.readdir fs path encoding
+              #(if %1
+                 (put! result-chan {:error %1})
+                 (put! result-chan {:result (js->clj %2)})))
+    result-chan))
+
+(defn unlink [path]
+  (let [error-chan (chan)]
+    (.unlink fs path #(if % (put! error-chan {:error %1}) (close! error-chan)))
+    error-chan))
 
 (defn do-for-every-key [m func]
   (if (and (map? m) func)
@@ -163,12 +177,28 @@
        (put! result-chan {:error e})))
     result-chan))
 
+(defn delete-old-wallpaper []
+  (let [num (- (count (:wallpapers @state)) (:max-wp-num @config))
+        old-files (take-last num (:wallpapers @state))
+        error-chan (chan)]
+    (if (> num 0)
+      (go-try
+       (swap! state assoc :wallpapers (take (:max-wp-num @config) (:wallpapers @state)))
+       (doseq [file old-files]
+         (<!-with-err (unlink file)))
+       (close! error-chan)
+       (catch :default e
+         (put! error-chan {:error e})))
+      (close! error-chan))
+    error-chan))
+
 (defn preview []
   [:div#preview
    [:div#wallpaper-history>div
-    (for [src (:wallpapers @state)]
-      ^{:key (hash src)}
-      [:img {:src src}])]
+    (doall
+     (for [src (:wallpapers @state)]
+       ^{:key (hash src)}
+       [:img {:src src}]))]
    [:div.toolbar
     [:button#new-wallpaper
      {:on-click (fn [e]
@@ -176,12 +206,16 @@
                   (go-try
                    (let [result (<! (w/generate w/line (:width @config) (:height @config)))
                          file-path (<!-with-err (save-wallpaper result))]
+                     (swap! state update-in [:wallpapers] #(cons file-path %))
                      (swap! state assoc :working? false)
-                     (swap! state update-in [:wallpapers] #(cons (str "file://" file-path) %)))
+                     (<!-with-err (delete-old-wallpaper)))
                    (catch :default e
                       (js/console.error e))))
       :disabled (:working? @state)}
      [:div "新壁纸"]]]])
+
+(defn parse-int [s]
+  (js/parseInt s))
 
 (defn generator-setting []
   [:div
@@ -190,18 +224,18 @@
    [:p "生成壁纸大小"]
    [:p
     "宽:" [:input {:value (:width @config) :type "number"
-                   :on-change #(do (swap! config assoc :width (-> % .-target .-value))
+                   :on-change #(do (swap! config assoc :width (-> % .-target .-value parse-int))
                                    (save-config))}]
     "高:" [:input {:value (:height @config) :type "number"
-                   :on-change #(do (swap! config assoc :height (-> % .-target .-value))
+                   :on-change #(do (swap! config assoc :height (-> % .-target .-value parse-int))
                                    (save-config))}]]
    [:p "壁纸保存路径"
     [:input {:value (:save-path @config)
              :on-change #(do (swap! config assoc :save-path (-> % .-target .-value))
                              (save-config))}]]
-   [:p "最大壁纸保留数量#未完工"
+   [:p "最大壁纸保留数量"
     [:input {:value (:max-wp-num @config) :type "number"
-             :on-change #(do (swap! config assoc :max-wp-num (-> % .-target .-value))
+             :on-change #(do (swap! config assoc :max-wp-num (-> % .-target .-value parse-int))
                              (save-config))}]]])
 
 (defn body []
@@ -230,6 +264,11 @@
          (<!-with-err
           (write-file config-file
                       (write-json-str @config :space 4)))))
+   (swap! state assoc :wallpapers
+                (->> (<!-with-err (read-dir (:save-path @config)))
+                     reverse
+                     (map #(str (:save-path @config) %))))
+   (<!-with-err (delete-old-wallpaper))
    (r/render body (query-selector "#app"))
    (catch :default e
      (js/console.error e))))
