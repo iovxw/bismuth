@@ -124,25 +124,32 @@
      [:div "新壁纸"]]]])
 
 (defn generator-setting []
-  [:div
-   [:p "生成器选择#未完工"]
-   [:label "line" [:input {:type "checkbox"}]]
-   [:p "生成壁纸大小"]
-   [:p
-    "宽:" [:input {:value (:width @config) :type "number"
-                   :on-change #(do (swap! config assoc :width (-> % .-target .-value u/parse-int))
-                                   (save-config))}]
-    "高:" [:input {:value (:height @config) :type "number"
-                   :on-change #(do (swap! config assoc :height (-> % .-target .-value u/parse-int))
-                                   (save-config))}]]
-   [:p "壁纸保存路径"
-    [:input {:value (:save-path @config)
-             :on-change #(do (swap! config assoc :save-path (-> % .-target .-value))
-                             (save-config))}]]
-   [:p "最大壁纸保留数量"
-    [:input {:value (:max-wp-num @config) :type "number"
-             :on-change #(do (swap! config assoc :max-wp-num (-> % .-target .-value u/parse-int))
-                             (save-config))}]]])
+  [:div#generator-setting
+   [:p "生成器选择"]
+   [:label.generator-preview
+    [:div {:style {:background-image "url(images/background.png)"}}
+     [:div.footer>div.right "line" [:input {:type "checkbox" :checked true}]]]]
+   [:p "生成壁纸大小:"]
+   [:label.comment [:a "宽"]
+    [:input {:value (:width @config) :type "number"
+             :style {:width "5em"}
+             :on-change #(do (swap! config assoc :width (-> % .-target .-value u/parse-int))
+                             (save-config))}]
+    [:label.comment [:a "高"]
+     [:input {:value (:height @config) :type "number"
+              :style {:width "5em"}
+              :on-change #(do (swap! config assoc :height (-> % .-target .-value u/parse-int))
+                              (save-config))}]]]
+   [:p "壁纸保存路径:"]
+   [:input {:value (:save-path @config)
+            :style {:width "20em"}
+            :on-change #(do (swap! config assoc :save-path (-> % .-target .-value))
+                            (save-config))}]
+   [:p "最大壁纸保留数量:"]
+   [:input {:value (:max-wp-num @config) :type "number"
+            :style {:width "3em"}
+            :on-change #(do (swap! config assoc :max-wp-num (-> % .-target .-value u/parse-int))
+                            (save-config))}]])
 
 (defn body []
   [:div [title-bar]

@@ -229,3 +229,53 @@ body {
 #wallpaper-history img:last-child {
     margin-right: 0;
 }
+
+#generator-setting p {
+    margin-bottom: 5px;
+    cursor: default;
+    -webkit-user-select: none;
+}
+
+input {
+    background: white;
+    border: none;
+    outline: none;
+    padding: 0 0.2em;
+    height: 19px;
+    font-size: 14px;
+}
+
+label.comment {
+    background: black;
+    display: inline-flex;
+    -webkit-user-select: none;
+}
+
+label.comment a {
+    padding: 0 0.2em;
+}
+
+label.generator-preview > div {
+    width: 160px;
+    height: 90px;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    position: relative;
+    -webkit-user-select: none;
+}
+
+label.generator-preview div .footer {
+    width: 100%;
+    display: inline-flex;
+    background-color: rgba(0, 0, 0, 0.6);
+    position: absolute;
+    bottom: 0;
+    right: 0;
+}
+
+label.generator-preview div .footer .right {
+    display: inline-flex;
+    align-items: center;
+    margin-left: auto;
+}
