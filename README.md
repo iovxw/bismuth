@@ -6,7 +6,7 @@
 
 ## Build
 
-To build this repo, you need install [Boot](https://github.com/boot-clj/boot) first.
+To build this project, you need install [boot](https://github.com/boot-clj/boot) first.
 
 Then:
 
