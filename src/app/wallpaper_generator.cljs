@@ -3,20 +3,16 @@
   (:require [cljs.core.async :refer [>! <! put! take! timeout chan]]
             [reagent.core :as r]))
 
-(def color-group-list
-  [{:background ["#3a3d34"]
-    :foreground ["#e7e5d8" "#f3f4f4" "#3a3d34" "#849333"]}])
-
 (defn- rand-range [min max]
   (let [range (- max min)]
     (+ min (rand-int range))))
 
 (defprotocol WallpaperGenerator
-  (generate [this width height]))
+  (generate [this color-group-list width height]))
 
 (def line
   (reify WallpaperGenerator
-    (generate [this width height]
+    (generate [this color-group-list width height]
       (go
         (let [length (if (> width height) width height)
               color-group (rand-nth color-group-list)

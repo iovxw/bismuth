@@ -230,6 +230,10 @@ body {
     margin-right: 0;
 }
 
+#generator-setting {
+    padding-bottom: 10px;
+}
+
 #generator-setting p {
     margin-bottom: 5px;
     cursor: default;
@@ -265,17 +269,54 @@ label.generator-preview > div {
     -webkit-user-select: none;
 }
 
-label.generator-preview div .footer {
+label.generator-preview .footer {
     width: 100%;
     display: inline-flex;
     background-color: rgba(0, 0, 0, 0.6);
     position: absolute;
     bottom: 0;
-    right: 0;
 }
 
-label.generator-preview div .footer .right {
+label.generator-preview .right {
     display: inline-flex;
     align-items: center;
     margin-left: auto;
+}
+
+#generator-setting .color-group-list {
+    display: flex;
+    overflow-x: auto;
+}
+
+label.color-group-preview {
+    margin-right: 10px;
+}
+
+label.color-group-preview:last-child {
+    margin-right: 10px;
+}
+
+label.color-group-preview > div {
+    width: 200px;
+    height: 50px;
+    position: relative;
+}
+
+label.color-group-preview input {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+}
+
+label.color-group-preview .background,
+label.color-group-preview .foreground {
+    width: 100%;
+    height: 50%;
+    display: flex;
+}
+
+label.color-group-preview .color {
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
 }

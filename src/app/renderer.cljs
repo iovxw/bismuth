@@ -63,7 +63,16 @@
               (r/atom {:save-path (str (u/get-user-home) "/.cache/bismuth/")
                        :max-wp-num 50
                        :width width
-                       :height height})))
+                       :height height
+                       :colors [{:background ["#3a3d34"]
+                                 :foreground ["#e7e5d8" "#f3f4f4" "#3a3d34" "#849333"]
+                                 :disabled false}
+                                {:background ["#474747"]
+                                 :foreground ["#474747" "#3d3d3d" "#e84c3d" "#595959"]
+                                 :disabled false}
+                                {:background ["#474747"]
+                                 :foreground ["#474747" "#3d3d3d" "#2962FF" "#595959"]
+                                 :disabled false}]})))
 
 (def config-dir (str (u/get-user-home) "/.config/bismuth/"))
 (def config-file (str config-dir "config.json"))
@@ -101,6 +110,9 @@
       (close! error-chan))
     error-chan))
 
+(defn get-available-colors []
+  (filter #(not (:disabled %)) (:colors @config)))
+
 (defn preview []
   [:div#preview
    [:div#wallpaper-history>div
@@ -113,7 +125,8 @@
      {:on-click (fn [e]
                   (swap! state assoc :working? true)
                   (go-try
-                   (let [result (<! (w/generate w/line (:width @config) (:height @config)))
+                   (let [result (<! (w/generate w/line (get-available-colors)
+                                                (:width @config) (:height @config)))
                          file-path (<!-with-err (save-wallpaper result))]
                      (swap! state update-in [:wallpapers] #(cons file-path %))
                      (swap! state assoc :working? false)
@@ -125,10 +138,34 @@
 
 (defn generator-setting []
   [:div#generator-setting
-   [:p "生成器选择"]
-   [:label.generator-preview
-    [:div {:style {:background-image "url(images/background.png)"}}
-     [:div.footer>div.right "line" [:input {:type "checkbox" :checked true}]]]]
+   [:p "生成器选择:"]
+   [:label.generator-preview>div
+    {:style {:background-image "url(images/background.png)"}}
+    [:div.footer>div.right "line" [:input {:type "checkbox" :checked true
+                                           :on-change #()}]]]
+   [:p "配色选择:"]
+   (into
+    [:div.color-group-list]
+    (map-indexed
+     (fn [i color-group]
+       ^{:key i}
+       [:label.color-group-preview>div
+        [:div.background
+         (for [background (:background color-group)]
+           ^{:key background}
+           [:div.color {:style {:background-color background}}])]
+        [:div.foreground
+         (for [foreground (:foreground color-group)]
+           ^{:key foreground}
+           [:div.color {:style {:background-color foreground}}])]
+        [:input {:type "checkbox" :checked (not (:disabled color-group))
+                 :on-change #(let [checked (-> % .-target .-checked)]
+                               ;; 至少保留一组可用配色
+                               (when (or checked (> (count (get-available-colors)) 1))
+                                 (swap! config assoc-in [:colors i :disabled]
+                                        (not checked))
+                                 (save-config)))}]])
+     (:colors @config)))
    [:p "生成壁纸大小:"]
    [:label.comment [:a "宽"]
     [:input {:value (:width @config) :type "number"
