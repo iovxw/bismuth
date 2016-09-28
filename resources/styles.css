@@ -4,59 +4,23 @@ body {
     overflow: hidden;
 }
 
-#app {
-    width: 100%;
-    height: 100vh;
-    background-image: url(images/background.png);
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: cover;
-}
-
-#app > div {
-    height: 100%;
-}
-
-#title-bar {
-    width: 100%;
-    height: 48px;
-    background-color: rgba(0, 0, 0, 0.6);
-    display: flex;
-    align-items: center;
-    -webkit-user-select: none;
-    -webkit-app-region: drag;
-}
-
-#title-bar .toolbar {
-    margin-left: auto;
-    margin-right: 16px;
-}
-
-#title-bar button {
-    width: 16px;
-    height: 16px;
-    margin-left: 10px;
-    padding: 0;
+input {
+    background: white;
+    border: none;
     outline: none;
-    transition: background 0.5s;
-    -webkit-app-region: no-drag;
+    padding: 0 0.2em;
+    height: 19px;
+    font-size: 14px;
 }
 
-#title-bar .close {
-    border: #e53935 solid 2px;
-    background: #e53935;
-}
-#title-bar .close:hover {
-    background: #ef5350;
+label.comment {
+    background: black;
+    display: inline-flex;
+    -webkit-user-select: none;
 }
 
-#title-bar .mini-size {
-    border: #43A047 solid 2px;
-    background: #43A047;
-}
-
-#title-bar .mini-size:hover {
-    background: #66BB6A;
+label.comment a {
+    padding: 0 0.2em;
 }
 
 .contents {
@@ -146,6 +110,61 @@ body {
 
 .tab.focus {
     background: rgba(255, 255, 255, 0.2);
+}
+
+#app {
+    width: 100%;
+    height: 100vh;
+    background-image: url(images/background.png);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+}
+
+#app > div {
+    height: 100%;
+}
+
+#title-bar {
+    width: 100%;
+    height: 48px;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    -webkit-user-select: none;
+    -webkit-app-region: drag;
+}
+
+#title-bar .toolbar {
+    margin-left: auto;
+    margin-right: 16px;
+}
+
+#title-bar button {
+    width: 16px;
+    height: 16px;
+    margin-left: 10px;
+    padding: 0;
+    outline: none;
+    transition: background 0.5s;
+    -webkit-app-region: no-drag;
+}
+
+#title-bar .close {
+    border: #e53935 solid 2px;
+    background: #e53935;
+}
+#title-bar .close:hover {
+    background: #ef5350;
+}
+
+#title-bar .mini-size {
+    border: #43A047 solid 2px;
+    background: #43A047;
+}
+
+#title-bar .mini-size:hover {
+    background: #66BB6A;
 }
 
 #preview {
@@ -240,26 +259,7 @@ body {
     -webkit-user-select: none;
 }
 
-input {
-    background: white;
-    border: none;
-    outline: none;
-    padding: 0 0.2em;
-    height: 19px;
-    font-size: 14px;
-}
-
-label.comment {
-    background: black;
-    display: inline-flex;
-    -webkit-user-select: none;
-}
-
-label.comment a {
-    padding: 0 0.2em;
-}
-
-label.generator-preview > div {
+#generator-setting .generator-preview > div {
     width: 160px;
     height: 90px;
     background-repeat: no-repeat;
@@ -269,7 +269,7 @@ label.generator-preview > div {
     -webkit-user-select: none;
 }
 
-label.generator-preview .footer {
+#generator-setting .generator-preview .footer {
     width: 100%;
     display: inline-flex;
     background-color: rgba(0, 0, 0, 0.6);
@@ -277,7 +277,7 @@ label.generator-preview .footer {
     bottom: 0;
 }
 
-label.generator-preview .right {
+#generator-setting .generator-preview .right {
     display: inline-flex;
     align-items: center;
     margin-left: auto;
@@ -288,34 +288,34 @@ label.generator-preview .right {
     overflow-x: auto;
 }
 
-label.color-group-preview {
+#generator-setting .color-group-preview {
     margin-right: 10px;
 }
 
-label.color-group-preview:last-child {
+#generator-setting .color-group-preview:last-child {
     margin-right: 10px;
 }
 
-label.color-group-preview > div {
+#generator-setting .color-group-preview > div {
     width: 200px;
     height: 50px;
     position: relative;
 }
 
-label.color-group-preview input {
+#generator-setting .color-group-preview input[type="checkbox"] {
     position: absolute;
     bottom: 0;
     right: 0;
 }
 
-label.color-group-preview .background,
-label.color-group-preview .foreground {
+#generator-setting .color-group-preview .background,
+#generator-setting .color-group-preview .foreground {
     width: 100%;
     height: 50%;
     display: flex;
 }
 
-label.color-group-preview .color {
+#generator-setting .color-group-preview .color {
     width: 100%;
     height: 100%;
     box-sizing: border-box;
