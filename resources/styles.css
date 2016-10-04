@@ -112,6 +112,43 @@ label.comment a {
     background: rgba(255, 255, 255, 0.2);
 }
 
+.btn {
+    border: 2px solid white;
+    box-sizing: border-box;
+    vertical-align: top;
+    position: relative;
+    color: white;
+    background: none;
+    outline: none;
+    cursor: pointer;
+}
+
+.btn a {
+    -webkit-user-select: none;
+    text-align: center;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    margin: auto;
+    height: 1em;
+    line-height: 1em;
+}
+
+.btn:hover:not([disabled]) {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.btn:active {
+    background: none;
+}
+
+.btn:disabled {
+    background: gray;
+    cursor: not-allowed;
+}
+
 #app {
     width: 100%;
     height: 100vh;
@@ -309,14 +346,85 @@ label.comment a {
 }
 
 #generator-setting .color-group-preview .background,
-#generator-setting .color-group-preview .foreground {
+#generator-setting .color-group-preview .foreground,
+#color-setting .color-group .background,
+#color-setting .color-group .foreground {
     width: 100%;
     height: 50%;
     display: flex;
 }
 
-#generator-setting .color-group-preview .color {
+#generator-setting .color-group-preview .color,
+#color-setting .color-group .color {
     width: 100%;
     height: 100%;
     box-sizing: border-box;
+}
+
+#color-setting > div {
+    height: 100%;
+    transition: transform 0.2s;
+    transform: translateY(0);
+}
+
+#color-setting .list {
+    height: 100%;
+    overflow: auto;
+}
+
+#color-setting {
+    height: 100%;
+    overflow-y: hidden;
+}
+
+#color-setting .color-group {
+    width: 200px;
+    height: 50px;
+    margin: 5px;
+    display: inline-table;
+    cursor: pointer;
+}
+
+#color-setting .editor {
+    height: 100%;
+    overflow: auto;
+}
+
+#color-setting .editor > div {
+    min-height: 100%;
+    overflow: auto;
+    position: relative;
+}
+
+#color-setting .editor .box {
+    padding-bottom: 3em;
+    margin-bottom: 10px;
+}
+
+#color-setting .editor input {
+    width: 4em;
+}
+
+#color-setting .editor .color {
+    height: 19px;
+    font-size: 14px;
+    width: 8em;
+}
+
+#color-setting .editor .buttons {
+    width: 100%;
+    box-sizing: border-box;
+    height: 3em;
+    display: flex;
+    position: absolute;
+    bottom: 0;
+}
+
+#color-setting .editor .buttons .btn {
+    width: 100%;
+    height: 100%;
+}
+
+#color-setting .editor .buttons .delete:hover:not([disabled]) {
+    background-color: red;
 }

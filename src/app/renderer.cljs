@@ -57,7 +57,8 @@
     {:width width :height height}))
 
 (def state (r/atom {:working? false
-                    :wallpapers []}))
+                    :wallpapers []
+                    :color-editor-target nil}))
 
 (def config (let [{:keys [width height]} (get-largest-screen-size)]
               (r/atom {:save-path (str (u/get-user-home) "/.cache/bismuth/")
@@ -188,11 +189,86 @@
             :on-change #(do (swap! config assoc :max-wp-num (-> % .-target .-value u/parse-int))
                             (save-config))}]])
 
+(defn dissoc-vec [coll pos]
+  (vec (concat (subvec coll 0 pos) (subvec coll (inc pos)))))
+
+(defn color-setting []
+  [:div#color-setting>div
+   {:style {:transform (when (:color-editor-target @state) "translateY(-100%)")}}
+   [:div.list
+    (map-indexed
+     (fn [id color-group]
+       ^{:key id}
+       [:div.color-group
+        {:on-click #(swap! state assoc :color-editor-target id)}
+        [:div.background
+         (for [background (:background color-group)]
+           ^{:key background}
+           [:div.color {:style {:background-color background}}])]
+        [:div.foreground
+         (for [foreground (:foreground color-group)]
+           ^{:key foreground}
+           [:div.color {:style {:background-color foreground}}])]])
+     (:colors @config))
+    [:div.color-group.btn {:on-click #(do (swap! config update :colors
+                                                 conj {:background ["#ffffff"]
+                                                       :foreground ["#ffffff"]
+                                                       :disabled false})
+                                          (swap! state assoc :color-editor-target
+                                                 (dec (count (:colors @config)))))}
+     [:a "+"]]]
+   (let [index (:color-editor-target @state)
+         color-group (get (:colors @config) index)]
+     [:div.editor>div
+      [:div.box
+       [:p "背景色:"]
+       (map-indexed
+        (fn [i background]
+          ^{:key i}
+          [:div.color {:style {:background-color background}}
+           [:input {:on-change #(let [color (-> % .-target .-value)]
+                                  (if-not (empty? color)
+                                    (swap! config assoc-in [:colors index :background i]
+                                           color)
+                                    (when (> (count (get-in @config [:colors index :background])) 1)
+                                      (swap! config update-in [:colors index :background]
+                                             dissoc-vec i)))
+                                  (save-config))
+                    :value background}]])
+        (:background color-group))
+       [:div.color.btn {:on-click #(swap! config update-in [:colors index :background]
+                                          conj "#ffffff")}
+        [:a "+"]]
+       [:p "前景色:"]
+       (map-indexed
+        (fn [i foreground]
+          ^{:key i}
+          [:div.color {:style {:background-color foreground}}
+           [:input {:on-change #(let [color (-> % .-target .-value)]
+                                  (if-not (empty? color)
+                                    (swap! config assoc-in [:colors index :foreground i]
+                                           color)
+                                    (when (> (count (get-in @config [:colors index :foreground])) 1)
+                                      (swap! config update-in [:colors index :foreground]
+                                             dissoc-vec i)))
+                                  (save-config))
+                    :value foreground}]])
+        (:foreground color-group))
+       [:div.color.btn {:on-click #(swap! config update-in [:colors index :foreground]
+                                          conj "#ffffff")}
+        [:a "+"]]]
+      [:div.buttons
+       [:button.back.btn {:on-click #(swap! state assoc :color-editor-target nil)} [:a "返回"]]
+       [:button.delete.btn {:on-click #(do (swap! state assoc :color-editor-target nil)
+                                           (swap! config update :colors dissoc-vec index))
+                            :disabled (<= (count (:colors @config)) 1)} [:a "删除"]]]])])
+
 (defn body []
   [:div [title-bar]
    [contents
     "壁纸设置" [preview]
     "生成器设置" [generator-setting]
+    "配色设置" [color-setting]
     "自动刷新" [:div
                 [:label "启用" [:input {:type "checkbox"}]]
                 [:p "时间间隔" [:input]]
