@@ -122,7 +122,7 @@
        ^{:key (hash src)}
        [:img {:src src}]))]
    [:div.toolbar
-    [:button#new-wallpaper
+    [:button#new-wallpaper.btn
      {:on-click (fn [e]
                   (swap! state assoc :working? true)
                   (go-try

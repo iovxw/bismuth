@@ -140,7 +140,7 @@ label.comment a {
     background: rgba(255, 255, 255, 0.2);
 }
 
-.btn:active {
+.btn:active:not([disabled]) {
     background: none;
 }
 
@@ -220,12 +220,7 @@ label.comment a {
 #new-wallpaper {
     padding: 10px;
     margin-left: auto;
-    border: 3px solid white;
-    color: white;
-    background: none;
-    outline: none;
-    transition: all 0.5s;
-    cursor: pointer;
+    border-width: 3px;
     box-sizing: content-box;
 }
 
@@ -239,16 +234,8 @@ label.comment a {
 	}
 }
 
-#new-wallpaper:hover {
-    background: rgba(255, 255, 255, 0.2);
-}
-
-#new-wallpaper:active {
-    background: none;
-    transition: none;
-}
-
 #new-wallpaper:disabled {
+    background: none;
     cursor: progress;
 }
 
