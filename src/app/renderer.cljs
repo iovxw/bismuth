@@ -1,8 +1,8 @@
 (ns app.renderer
-  (:require-macros [cljs.core.async.macros :refer [go]]
-                   [app.macros :refer [<!-with-err go-let go-try]])
+  (:require-macros [cljs.core.async.macros :refer [go go-loop]]
+                   [app.macros :refer [<!? take!? go-let go-try]])
   (:require [reagent.core :as r]
-            [cljs.core.async :refer [<! >! put! take! chan close!]]
+            [cljs.core.async :refer [<! >! put! take! chan close! timeout]]
             [clojure.string :as string]
             [app.wallpaper-generator :as w]
             [app.json :as json]
@@ -12,13 +12,14 @@
 (def electron    (js/require "electron"))
 (def ipcRenderer (.-ipcRenderer electron))
 (def remote      (.-remote electron))
+(def child-proc  (js/require "child_process"))
 
 (def current-window (.getCurrentWindow remote))
 
 (defn title-bar []
   [:div#title-bar
    [:div.toolbar
-    [:button.mini-size {:on-click #(.minimize current-window)}]
+    [:button.mini-size {:on-click #(.hide current-window)}]
     [:button.close {:on-click #(.close current-window)}]]])
 
 (defn tabs [tabs-state title-list]
@@ -56,6 +57,11 @@
         height (apply max all-height)]
     {:width width :height height}))
 
+(def wallpaper-set-commands {"GNOME" "gsettings set org.gnome.desktop.background picture-uri \"file://%PIC%\""
+                             "KED" "" ; TODO
+                             "XFCE" "xfconf-query --channel xfce4-desktop --property /backdrop/screen0/monitor0/image-path --set \"%PIC%\""
+                             "Cinnamon" "gsettings set org.cinnamon.desktop.background picture-uri \"file://%PIC%\""})
+
 (def state (r/atom {:working? false
                     :wallpapers []
                     :color-editor-target nil}))
@@ -73,7 +79,10 @@
                                  :disabled false}
                                 {:background ["#474747"]
                                  :foreground ["#474747" "#3d3d3d" "#2962FF" "#595959"]
-                                 :disabled false}]})))
+                                 :disabled false}]
+                       :auto-wallpaper {:enabled false
+                                        :minute 10
+                                        :command (get wallpaper-set-commands "GNOME")}})))
 
 (def config-dir (str (u/get-user-home) "/.config/bismuth/"))
 (def config-file (str config-dir "config.json"))
@@ -88,9 +97,9 @@
         file-path (str (:save-path @config) file-name)
         result-chan (chan)]
     (go-try
-     (when-not (<!-with-err (io/file-exist? (:save-path @config)))
-       (<!-with-err (io/mkdir (:save-path @config))))
-     (<!-with-err (io/write-file file-path data :encoding "base64"))
+     (when-not (<!? (io/file-exist? (:save-path @config)))
+       (<!? (io/mkdir (:save-path @config))))
+     (<!? (io/write-file file-path data :encoding "base64"))
      (put! result-chan {:result file-path})
      (catch :default e
        (put! result-chan {:error e})))
@@ -104,7 +113,7 @@
       (go-try
        (swap! state assoc :wallpapers (take (:max-wp-num @config) (:wallpapers @state)))
        (doseq [file old-files]
-         (<!-with-err (io/unlink file)))
+         (<!? (io/unlink file)))
        (close! error-chan)
        (catch :default e
          (put! error-chan {:error e})))
@@ -114,26 +123,41 @@
 (defn get-available-colors []
   (filter #(not (:disabled %)) (:colors @config)))
 
+(defn set-wallpaper [path]
+  (let [cmds (-> (string/replace (:command (:auto-wallpaper @config))
+                                 #"%PIC%" path)
+                 (string/split #"\n"))]
+    (doseq [cmd cmds]
+      (.exec child-proc cmd
+             (fn [error stdout stderr]
+               (when error (js/console.error error))
+               (when-not (empty? stdout) (js/console.log stdout))
+               (when-not (empty? stderr) (js/console.log stderr)))))))
+
+(defn new-wallpaper []
+  (go-try
+   (swap! state assoc :working? true)
+   (let [result (<! (w/generate w/line (get-available-colors)
+                                (:width @config) (:height @config)))
+         file-path (<!? (save-wallpaper result))]
+     (swap! state update-in [:wallpapers] #(cons file-path %))
+     (swap! state assoc :working? false)
+     (<!? (delete-old-wallpaper))
+     {:result file-path})
+   (catch :default e
+     {:error e})))
+
 (defn preview []
   [:div#preview
    [:div#wallpaper-history>div
     (doall
      (for [src (:wallpapers @state)]
        ^{:key (hash src)}
-       [:img {:src src}]))]
+       [:img {:src src :on-click #(set-wallpaper src)}]))]
    [:div.toolbar
     [:button#new-wallpaper.btn
-     {:on-click (fn [e]
-                  (swap! state assoc :working? true)
-                  (go-try
-                   (let [result (<! (w/generate w/line (get-available-colors)
-                                                (:width @config) (:height @config)))
-                         file-path (<!-with-err (save-wallpaper result))]
-                     (swap! state update-in [:wallpapers] #(cons file-path %))
-                     (swap! state assoc :working? false)
-                     (<!-with-err (delete-old-wallpaper)))
-                   (catch :default e
-                      (js/console.error e))))
+     {:on-click #(take!? (new-wallpaper)
+                         (fn [_ err] (when err (js/console.error err))))
       :disabled (:working? @state)}
      [:div "新壁纸"]]]])
 
@@ -263,36 +287,64 @@
                                            (swap! config update :colors dissoc-vec index))
                             :disabled (<= (count (:colors @config)) 1)} [:a "删除"]]]])])
 
+(defn wallpaper-update-loop []
+  (go-loop []
+    (<! (timeout (* (:minute (:auto-wallpaper @config)) 1000 60)))
+    (when (:enabled (:auto-wallpaper @config))
+      (take!? (new-wallpaper)
+              (fn [wallpaper-path error]
+                (if-not error
+                  (set-wallpaper wallpaper-path)
+                  (js/console.error error)))))
+    (recur)))
+
+(defn auto-wallpaper []
+  [:div#auto-wallpaper
+   [:p "启用:" [:input {:type "checkbox" :checked (:enabled (:auto-wallpaper @config))
+                        :on-change #(do (swap! config assoc-in [:auto-wallpaper :enabled]
+                                               (-> % .-target .-checked))
+                                        (save-config))}]]
+   [:p "刷新间隔:"
+    [:label.comment [:input {:type "number" :style {:width "3em"}
+                             :value (:minute (:auto-wallpaper @config))
+                             :on-change #(do (swap! config assoc-in [:auto-wallpaper :minute]
+                                                    (-> % .-target .-value u/parse-int))
+                                             (save-config))}]
+     [:a "分钟"]]]
+   [:p "壁纸设置命令:"
+    (for [[de cmd] wallpaper-set-commands]
+      ^{:key de}
+      [:button.btn {:on-click #(do (swap! config assoc-in [:auto-wallpaper :command] cmd)
+                                   (save-config))} de])]
+   [:textarea.command {:value (:command (:auto-wallpaper @config))
+                       :on-change #(do (swap! config assoc-in [:auto-wallpaper :command]
+                                              (-> % .-target .-value))
+                                       (save-config))}]])
+
 (defn body []
   [:div [title-bar]
    [contents
     "壁纸设置" [preview]
     "生成器设置" [generator-setting]
     "配色设置" [color-setting]
-    "自动刷新" [:div
-                [:label "启用" [:input {:type "checkbox"}]]
-                [:p "时间间隔" [:input]]
-                [:div "壁纸设置命令:"
-                 [:div "预置:"
-                  [:button "GNOME"] [:button "KDE"]
-                  [:button "Xfce"] [:button "Cinnamon"]]
-                 [:textarea]]]
+    "自动刷新" [auto-wallpaper]
     "关于" [:div "..."]]])
 
 (defn init []
   (enable-console-print!)
   (go-try
-   (if (<!-with-err (io/file-exist? config-file))
-     (let [data (<!-with-err (io/read-file config-file))
+   (if (<!? (io/file-exist? config-file))
+     (let [data (<!? (io/read-file config-file))
            cfg (json/read-str data :key-fn keyword)]
        (reset! config cfg))
-     (do (<!-with-err (io/mkdir config-dir))
-         (<!-with-err (save-config))))
+     (do (<!? (io/mkdir config-dir))
+         (<!? (save-config))))
    (swap! state assoc :wallpapers
-          (->> (<!-with-err (io/read-dir (:save-path @config)))
+          (->> (<!? (io/read-dir (:save-path @config)))
                reverse
                (map #(str (:save-path @config) %))))
-   (<!-with-err (delete-old-wallpaper))
+   (<!? (delete-old-wallpaper))
    (r/render body (u/query-selector "#app"))
+   (wallpaper-update-loop)
    (catch :default e
      (js/console.error e))))

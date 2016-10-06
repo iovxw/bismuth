@@ -75,6 +75,8 @@
   (let [t (Tray. (resource "images/icon.png"))
         menu (build-menu [{:label "Exit"
                            :click #(.quit app)}])]
+    (.on t "click" #(do (.show @main-window)
+                        (.focus @main-window)))
     (.setToolTip t "bismuth")
     (.setContextMenu t menu)
     (reset! tray t))

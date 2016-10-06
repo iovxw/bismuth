@@ -266,6 +266,7 @@ label.comment a {
 #wallpaper-history img {
     height: 100%;
     margin-right: 5px;
+    cursor: pointer;
 }
 
 
@@ -277,7 +278,9 @@ label.comment a {
     padding-bottom: 10px;
 }
 
-#generator-setting p {
+#generator-setting p,
+#color-setting p,
+#auto-wallpaper p {
     margin-bottom: 5px;
     cursor: default;
     -webkit-user-select: none;
@@ -413,5 +416,20 @@ label.comment a {
 }
 
 #color-setting .editor .buttons .delete:hover:not([disabled]) {
-    background-color: red;
+    background: red;
+}
+
+#auto-wallpaper .command {
+    width: 100%;
+    box-sizing: border-box;
+    resize: vertical;
+}
+
+#auto-wallpaper p {
+    display: flex;
+    align-items: center;
+}
+
+#auto-wallpaper p > * {
+    margin-left: 0.5em;
 }
