@@ -1,7 +1,5 @@
 (ns app.io
-  (:require-macros [cljs.core.async.macros :refer [go]]
-                   [app.macros :refer [<!-with-err go-try]])
-  (:require [cljs.core.async :refer [<! >! put! take! chan close!]]))
+  (:require [cljs.core.async :refer [put! chan close!]]))
 
 (def fs (js/require "fs"))
 
