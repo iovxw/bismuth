@@ -60,7 +60,8 @@
 (def wallpaper-set-commands {"GNOME" "gsettings set org.gnome.desktop.background picture-uri \"file://%PIC%\""
                              "KED" "" ; TODO
                              "XFCE" "xfconf-query --channel xfce4-desktop --property /backdrop/screen0/monitor0/image-path --set \"%PIC%\""
-                             "Cinnamon" "gsettings set org.cinnamon.desktop.background picture-uri \"file://%PIC%\""})
+                             "Cinnamon" "gsettings set org.cinnamon.desktop.background picture-uri \"file://%PIC%\""
+                             "DDE" "gsettings set com.deepin.wrap.gnome.desktop.background picture-uri \"file://%PIC%\""})
 
 (def state (r/atom {:working? false
                     :wallpapers []
