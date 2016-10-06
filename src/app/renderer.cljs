@@ -336,7 +336,7 @@
    (if (<!? (io/file-exist? config-file))
      (let [data (<!? (io/read-file config-file))
            cfg (json/read-str data :key-fn keyword)]
-       (reset! config cfg))
+       (swap! config into cfg))
      (do (<!? (io/mkdir config-dir))
          (<!? (save-config))))
    (swap! state assoc :wallpapers
