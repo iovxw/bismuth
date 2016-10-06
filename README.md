@@ -1,6 +1,7 @@
 # bismuth
 
-![screenshot.png](screenshot.png)
+| ![screenshot0.png](screenshot0.png) | ![screenshot1.png](screenshot1.png) |
+|:-----------------------------------:|:------------------------------------|
 
 填坑中
 
