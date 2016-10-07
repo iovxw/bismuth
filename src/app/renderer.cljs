@@ -88,6 +88,10 @@
 (def config-dir (str (u/get-user-home) "/.config/bismuth/"))
 (def config-file (str config-dir "config.json"))
 
+(defn log-error [msg]
+  (js/console.error msg)
+  (js/alert msg))
+
 (defn save-config []
   (io/write-file config-file
                  (json/write-str @config :space 4)))
@@ -131,7 +135,7 @@
     (doseq [cmd cmds]
       (.exec child-proc cmd
              (fn [error stdout stderr]
-               (when error (js/console.error error))
+               (when error (log-error error))
                (when-not (empty? stdout) (js/console.log stdout))
                (when-not (empty? stderr) (js/console.log stderr)))))))
 
@@ -158,7 +162,7 @@
    [:div.toolbar
     [:button#new-wallpaper.btn
      {:on-click #(take!? (new-wallpaper)
-                         (fn [_ err] (when err (js/console.error err))))
+                         (fn [_ err] (when err (log-error err))))
       :disabled (:working? @state)}
      [:div "新壁纸"]]]])
 
@@ -296,7 +300,7 @@
               (fn [wallpaper-path error]
                 (if-not error
                   (set-wallpaper wallpaper-path)
-                  (js/console.error error)))))
+                  (log-error error)))))
     (recur)))
 
 (defn auto-wallpaper []
@@ -340,12 +344,15 @@
        (swap! config into cfg))
      (do (<!? (io/mkdir config-dir))
          (<!? (save-config))))
-   (swap! state assoc :wallpapers
-          (->> (<!? (io/read-dir (:save-path @config)))
-               reverse
-               (map #(str (:save-path @config) %))))
+   (if (<!? (io/file-exist? (:save-path @config)))
+     (swap! state assoc :wallpapers
+            (->> (<!? (io/read-dir (:save-path @config)))
+                 reverse
+                 (map #(str (:save-path @config) %))))
+     (io/mkdir (:save-path @config)))
    (<!? (delete-old-wallpaper))
    (r/render body (u/query-selector "#app"))
    (wallpaper-update-loop)
    (catch :default e
-     (js/console.error e))))
+     (log-error e)
+     (.close current-window))))
