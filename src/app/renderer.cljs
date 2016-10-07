@@ -344,12 +344,11 @@
        (swap! config into cfg))
      (do (<!? (io/mkdir config-dir))
          (<!? (save-config))))
-   (if (<!? (io/file-exist? (:save-path @config)))
+   (when (<!? (io/file-exist? (:save-path @config)))
      (swap! state assoc :wallpapers
             (->> (<!? (io/read-dir (:save-path @config)))
                  reverse
-                 (map #(str (:save-path @config) %))))
-     (io/mkdir (:save-path @config)))
+                 (map #(str (:save-path @config) %)))))
    (<!? (delete-old-wallpaper))
    (r/render body (u/query-selector "#app"))
    (wallpaper-update-loop)
