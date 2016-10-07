@@ -3,7 +3,9 @@
 | ![screenshot0.png](screenshot0.png) | ![screenshot1.png](screenshot1.png) |
 |:-----------------------------------:|:------------------------------------|
 
-填坑中
+自动生成壁纸, 下载见 *Releases*
+
+更多介绍: <https://iovxw.net/p/bismuth.html>
 
 ## Build
 
